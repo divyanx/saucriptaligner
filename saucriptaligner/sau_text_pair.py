@@ -2,6 +2,7 @@ class SausagesTranscriptPair:
     """
     This class stores sausages and corresponding transcript
     """
+
     def __init__(self, sausages, wordlist):
         self.sausages = sausages
         self.wordlist = wordlist
@@ -14,6 +15,21 @@ class SausagesTranscriptPair:
     def create_from_sausages_sentence(sausages, wordlist):
         wordlist = wordlist.split()
         return SausagesTranscriptPair(sausages, wordlist)
+
+    def get_sausages_wordlist(self):
+        return self.sausages, self.wordlist
+
+    def get_sausages_sentence(self):
+        return self.sausages, ' '.join(self.wordlist)
+
+    def get_sentence(self):
+        return ' '.join(self.wordlist)
+
+    def get_wordlist(self):
+        return self.wordlist
+
+    def get_sausages(self):
+        return self.sausages
 
 
 class Sausages:
@@ -60,7 +76,6 @@ class Sausages:
         return self.sausages == other.sausages
 
 
-
 class Sausage:
     """
     Edges between two adjacent nodes form a single sausage
@@ -71,11 +86,11 @@ class Sausage:
     def __init__(self, edges, to_sort=True):
         # sort edges by weight in descending order
         if to_sort:
-            self.edges = sorted(edges, key=lambda x: x.weight, reverse=True)
+            self.edges = sorted(edges, key=lambda x: x[1], reverse=True)
         self.edges = edges
 
     @staticmethod
-    def create_from_edges(edges: [[str, float]], is_reverse_sorted=True):
+    def create_from_edges(edges: [(str, float)], is_reverse_sorted=True):
         """
         Create a sausage from a list of edges
 
