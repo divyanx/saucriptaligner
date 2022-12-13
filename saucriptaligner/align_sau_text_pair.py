@@ -1,6 +1,12 @@
+import shutil
+import urllib
+
 import editdistance
 import sys
+import os
 import warnings
+import urllib.request
+from tqdm.auto import tqdm
 from saucriptaligner.sau_text_pair import SausagesTranscriptPair
 
 sys.path.append('../')
@@ -19,6 +25,7 @@ class SausagesTranscriptAligner:
         @param conf2vec: a dictionary of confidence scores to vectors
         @type conf2vec: dict
         """
+        self.data_dir = "../data"
         self.lexicon_dict = lexicon_dict
         self.conf2vec = conf2vec
         self.score_functions = {
@@ -30,7 +37,7 @@ class SausagesTranscriptAligner:
         """
         Compute the average edit distance between two words
         """
-        distance = editdistance.eval(str1, str2)
+        distance = editdistance.eval(str1.split(" "), str2.split(" "))
         return distance / max(len(str1), len(str2))
 
     def phoneme_edit_distance(self, word1: str | int, word2: str | int) -> float:
@@ -169,5 +176,56 @@ class SausagesTranscriptAligner:
 
         return alignment
 
+    def set_data_dir(self, data_dir):
+        """
+        Set the data directory
+        @param data_dir: data directory
+        @type data_dir: str
+        """
+        self.data_dir = data_dir
+
+    def load_lexicon_from_cmu_dict(self, cmu_dict_path="http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/"):
+        """
+        Download lexicon from cmu dict
+        @param cmu_dict_path: path to cmu dict
+        @type cmu_dict_path: str
+        """
+        # download cmu dict file
+        cmu_dict_file = "cmudict-0.7b"
+        cmu_dict_file_path = os.path.join(self.data_dir, cmu_dict_file)
+        if not os.path.exists(cmu_dict_file_path):
+            print("Downloading cmu dict file")
+
+            with tqdm.wrapattr(urllib.request.urlopen(cmu_dict_path + cmu_dict_file), "read", desc=cmu_dict_file,
+                               total=int(urllib.request.urlopen(cmu_dict_path + cmu_dict_file).info()['Content-Length'])) as response:
+                with open(cmu_dict_file_path, 'wb') as out_file:
+                    shutil.copyfileobj(response, out_file)
+
+        # load cmu dict file
+        print("Loading cmu dict file")
 
 
+    def lexicon_dict_from_cmu_file(self):
+        """
+        Convert cmu dict file to dictionary
+        @return: cmu dict dictionary
+        @rtype: dict
+        """
+        cmu_dict_file = "cmudict-0.7b"
+        cmu_dict_file_path = os.path.join(self.data_dir, cmu_dict_file)
+        cmu_dict = {}
+        # check if cmu dict file exists
+        if not os.path.exists(cmu_dict_file_path):
+            # download cmu dict file
+            print("CMU dict file not found.")
+            self.load_lexicon_from_cmu_dict()
+
+        with open(cmu_dict_file_path, 'r') as cmu_dict_file:
+            for line in cmu_dict_file:
+                line = line.strip()
+                if line.startswith(";;;"):
+                    continue
+                word, pron = line.split("  ")
+                cmu_dict[word] = pron
+        self.lexicon_dict = cmu_dict
+        return cmu_dict

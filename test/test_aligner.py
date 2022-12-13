@@ -54,7 +54,7 @@ def test_aligned_sausages_word_pair_length():
         print(Fore.RED + "Sausage and transcript are not of same length after alignment"
               "when sausages length is more than transcript length")
         return False
-
+    print(aligned_short.get_sausages_sentence())
     sau_trans_pair_long = SausagesTranscriptPair.create_from_sausages_sentence(sau, transcript_text_long)
     aligned_long = aligner.align_without_word_repeat(sau_trans_pair_long, "1")
     try:
@@ -63,8 +63,8 @@ def test_aligned_sausages_word_pair_length():
         print(Fore.RED + "Sausage and transcript are not of same length after alignment"
               "when sausages lenght is less than transcript length")
         return False
-
     # print test passed from function name
+
     print(Fore.GREEN + "Test passed: " + sys._getframe().f_code.co_name)
     return True
 

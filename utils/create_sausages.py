@@ -4,7 +4,6 @@ from saucriptaligner.sau_text_pair import Sausages, SausagesTranscriptPair
 sys.path.append('../')
 
 
-
 def sausages_from_kaldi_sausages_string(kaldi_sausages_string):
     """
     This function takes a string of sausages in kaldi format and returns a list of sausages
