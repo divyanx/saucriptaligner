@@ -29,7 +29,8 @@ class SausagesTranscriptAligner:
         self.lexicon_dict = lexicon_dict
         self.conf2vec = conf2vec
         self.score_functions = {
-            "1": self.weighted_average_sausage_word_edit_distance
+            "w-avg-dist": self.weighted_average_sausage_word_edit_distance,
+            "avg-dist": self.average_sausage_word_edit_distance
         }
 
     @staticmethod
@@ -197,15 +198,15 @@ class SausagesTranscriptAligner:
             print("Downloading cmu dict file")
 
             with tqdm.wrapattr(urllib.request.urlopen(cmu_dict_path + cmu_dict_file), "read", desc=cmu_dict_file,
-                               total=int(urllib.request.urlopen(cmu_dict_path + cmu_dict_file).info()['Content-Length'])) as response:
+                               total=int(urllib.request.urlopen(cmu_dict_path + cmu_dict_file).info()[
+                                             'Content-Length'])) as response:
                 with open(cmu_dict_file_path, 'wb') as out_file:
                     shutil.copyfileobj(response, out_file)
 
         # load cmu dict file
         print("Loading cmu dict file")
 
-
-    def lexicon_dict_from_cmu_file(self):
+    def get_lexicon_dict_from_cmu_file(self):
         """
         Convert cmu dict file to dictionary
         @return: cmu dict dictionary
@@ -220,12 +221,16 @@ class SausagesTranscriptAligner:
             print("CMU dict file not found.")
             self.load_lexicon_from_cmu_dict()
 
+        # read cmu dict file as text file
         with open(cmu_dict_file_path, 'r') as cmu_dict_file:
             for line in cmu_dict_file:
-                line = line.strip()
-                if line.startswith(";;;"):
-                    continue
-                word, pron = line.split("  ")
-                cmu_dict[word] = pron
+                # ignore comments
+                if not line.startswith(";;;"):
+                    # split the line into word and pronunciation
+                    word, pronunciation = line.split("  ")
+                    # remove the newline character from the pronunciation
+                    pronunciation = pronunciation[:-1]
+                    # add word and pronunciation to cmu dict dictionary
+                    cmu_dict[word] = pronunciation
         self.lexicon_dict = cmu_dict
         return cmu_dict
